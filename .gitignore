@@ -1,3 +1,9 @@
+#mac
+.DS_Store
+
+#pycharm
+.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
