@@ -23,6 +23,9 @@ class SiteIndex(object):
 class SiteApi(object):
     exposed = True
 
+    def __init__(self):
+        self.user = UserApi()
+
     def GET(self):
         return "NO"
 
@@ -34,6 +37,21 @@ class SiteApi(object):
 
     def DELETE(self):
         return "NO"
+
+class UserApi(object):
+    exposed = True
+
+    def GET(self):
+        return "User NO"
+
+    def POST(self):
+        return "User NO"
+
+    def PUT(self):
+        return "User NO"
+
+    def DELETE(self):
+        return "User NO"
 
 if __name__ == '__main__':
     conf = {
