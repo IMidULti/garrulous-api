@@ -24,13 +24,19 @@ class SiteApi(object):
 
     def __init__(self):
         self.user = UserApi()
+        self.msg  = MessageApi()
+        self.auth = AuthApi()
+        self.friend = FriendApi()
 
     def GET(self):
         return "API for Garrulous. Read API documentation to use /v1/ resources."
 
+#Create User
+#Updates user
 class UserApi(object):
     exposed = True
 
+    # this can return username for searching other people.
     @cherrypy.tools.json_out()
     def GET(self):
         return {'error': True, 'msg': "Error during request"}
@@ -39,6 +45,7 @@ class UserApi(object):
     def POST(self):
         return {'error': True, 'msg': "Error during request"}
 
+    # For creating a new user
     @cherrypy.tools.json_out()
     def PUT(self):
         return {'error': True, 'msg': "Error during request"}
@@ -46,6 +53,48 @@ class UserApi(object):
     @cherrypy.tools.json_out()
     def DELETE(self):
         return {'error': True, 'msg': "Error during request"}
+
+class FriendApi(object):
+    exposed = True
+
+    # get lists of friends for this user
+    @cherrypy.tools.json_out()
+    def GET(self):
+        return {'error': True, 'msg': "Error during request"}
+
+    # Add person to friends list
+    @cherrypy.tools.json_out()
+    def PUT(self):
+        return {'error': True, 'msg': "Error during request"}
+
+    # remove person from friends list
+    @cherrypy.tools.json_out()
+    def DELETE(self):
+        return {'error': True, 'msg': "Error during request"}
+
+# Create Message
+# Get Message
+class MessageApi(object):
+    exposed = True
+
+    # Retrieve
+    @cherrypy.tools.json_out()
+    def GET(self):
+        return {'error': True, 'msg': "Error during request"}
+
+    # Send
+    @cherrypy.tools.json_out()
+    def PUT(self):
+        return {'error': True, 'msg': "Error during request"}
+
+class AuthApi(object):
+    exposed = True
+
+    # Get auth token back
+    @cherrypy.tools.json_out()
+    def GET(self):
+        return {'error': True, 'msg': "Error during request"}
+
 
 if __name__ == '__main__':
     #get SQLite started.
