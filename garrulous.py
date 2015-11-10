@@ -98,7 +98,7 @@ class AuthApi(object):
 
 if __name__ == '__main__':
     #get SQLite started.
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect('garrulous.db')
     #The database needs to be queried here. If the
     # tables don't exist they need to be created.
     # Add the schema here.
@@ -132,6 +132,9 @@ if __name__ == '__main__':
     cherrypy.config.update({'environment': 'production'})
     cherrypy.tree.mount(SiteIndex(), '/', conf)
     cherrypy.tree.mount(SiteApi(), '/v1/', api_conf)
+    cherrypy.tree.mount(SiteApi().user, '/user/', api_conf)
+    cherrypy.tree.mount(SiteApi().msg, '/msg/', api_conf)
+    cherrypy.tree.mount(SiteApi().user, '/friend/', api_conf)
 
     cherrypy.engine.start()
     cherrypy.engine.block()
