@@ -19,13 +19,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import collections
-import json
+import sqlite3
 
-from database import Database
+from Database import Database
 
 class Friendships(Database):
     def __init__(self):
-        super(Messages, self).__init__()
+        super(Friendships, self).__init__()
+
+    def createIfNotExists(self):
+        """
+        CREATE TABLE IF NOT EXISTS `garrulous`.`Friendships` (
+          `friendshipid` INT(11) NOT NULL,
+          `friendswith` INT(11) NOT NULL,
+          `userid` INT(11) NOT NULL,
+          PRIMARY KEY (`friendshipid`, `userid`, `friendswith`),
+          INDEX `fk_Friendships_Users_idx` (`userid` ASC),
+          CONSTRAINT `fk_Friendships_Users`
+            FOREIGN KEY (`userid`)
+            REFERENCES `garrulous`.`Users` (`id`)
+            ON DELETE NO ACTION
+            ON UPDATE NO ACTION)
+        ENGINE = InnoDB
+        :return:
+        """
+        pass
 
     # Read Friendships By User ID.
     def ReadFriendshipsByUID(self, uid):

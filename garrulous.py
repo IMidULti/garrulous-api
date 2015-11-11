@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import cherrypy
-import sqlite3
 import json
 
 from model.Users import Users
