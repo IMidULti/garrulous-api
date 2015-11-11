@@ -32,8 +32,9 @@ class SiteIndex(object):
 
     def GET(self):
         cherrypy.response.headers['Content-Type'] = 'text/html'
+        base_dir = os.path.dirname(os.path.abspath(__file__))
         try:
-            f = open('view/index.html')
+            f = open(base_dir + 'view/index.html')
             content = f.readlines()
             f.close()
         except IOError:
