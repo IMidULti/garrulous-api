@@ -33,22 +33,3 @@ class Database(object):
         self.conn = sqlite3.connect(db_path)
         self.db_cursor = self.conn.cursor()
 
-
-    # Create User table if it does not exist.
-    def CreateUserTable(self):
-        self.db_cursor.execute("")
-
-    # Create About User table if it does not exist.
-    def CreateAboutUserTable(self):
-        self.db_cursor.execute()
-
-    # Create Friendship Table if it does not exist.
-    def CreateFriendshipTable(self):
-        self.db_cursor.execute()
-
-    # Create Message Table if it does not exist.
-    def CreateMessagesTable(self):
-        try:
-            self.db_cursor.execute("")
-        except Exception, e:
-            raise e
