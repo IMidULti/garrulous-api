@@ -26,22 +26,16 @@ from Database import Database
 class Users(Database):
     def __init__(self):
         super(Users, self).__init__()
-
+    # Create user table is not exist.    
     def createIfNotExists(self):
         """
-        CREATE TABLE IF NOT EXISTS `garrulous`.`Users` (
-          `id` INT(11) NOT NULL,
-          `username` VARCHAR(45) NOT NULL,
-          `datejoined` INT NOT NULL,
-          `email` VARCHAR(45) NULL,
-          `firstname` VARCHAR(45) NULL,
-          `lastname` VARCHAR(45) NULL,
-          `password` VARCHAR(45) NOT NULL,
-          `phone` INT NULL,
-          PRIMARY KEY (`id`),
-          UNIQUE INDEX `userId_UNIQUE` (`id` ASC))
-        ENGINE = InnoDB
-        :return:
+        CREATE TABLE IF NOT EXISTS `users` (
+          `uid` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `first_name` TEXT,
+          `last_name` TEXT,
+          `email` TEXT,
+          `password` TEXT
+        )
         """
         pass
 

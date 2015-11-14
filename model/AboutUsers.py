@@ -26,22 +26,18 @@ from Database import Database
 class AboutUsers(Database):
     def __init__(self):
         super(AboutUsers, self).__init__()
-
+    
+    # Create about_user database if not exist.
     def createIfNotExists(self):
         """
-        CREATE TABLE IF NOT EXISTS `garrulous`.`AboutUsers` (
-          `id` INT(11) NOT NULL AUTO_INCREMENT,
-          `title` VARCHAR(45) NOT NULL,
-          `text` LONGTEXT NULL,
-          `userid` INT(11) NOT NULL,
-          PRIMARY KEY (`id`, `userid`),
-          INDEX `fk_AboutUsers_Users1_idx` (`userid` ASC),
-          CONSTRAINT `fk_AboutUsers_Users1`
-            FOREIGN KEY (`userid`)
-            REFERENCES `garrulous`.`Users` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION)
-        ENGINE = InnoDB
+        CREATE TABLE IF NOT EXISTS `about_user` (
+          `id`  INTEGER PRIMARY KEY AUTOINCREMENT,
+          `uid` INTEGER,
+          `age` TEXT,
+          `about_me` TEXT,
+          `location` TEXT,
+          `university` TEXT
+        )
         """
         pass
 
@@ -59,7 +55,7 @@ class AboutUsers(Database):
     def setAboutUserByUid(self, uid, title, content):
         """
         try:
-            self.db_cursor.execute("UPDATE AboutUser SET age=?, about_me=?, location=?, university=? \
+            self.db_cursor.execute("UPDATE about_user SET age=?, about_me=?, location=?, university=? \
                 WHERE uid=?", (age, about_me, location, university, uid))
         except sqlite3.IntegrityError, e:
             raise e

@@ -26,31 +26,18 @@ from Database import Database
 class Messages(Database):
     def __init__(self):
         super(Messages, self).__init__()
-
+    # Crate Message Database if not exist.
     def createIfNotExists(self):
         """
-        CREATE TABLE IF NOT EXISTS `garrulous`.`Messages` (
-          `id` INT(20) NOT NULL,
-          `message` LONGTEXT NOT NULL,
-          `is_read` TINYINT NULL,
-          `sent_datetime` INT(15) NULL,
-          `uid_to` INT(11) NOT NULL,
-          `uid_from` INT(11) NOT NULL,
-          PRIMARY KEY (`id`, `uid_to`, `uid_from`),
-          INDEX `fk_Messages_Users1_idx` (`uid_to` ASC),
-          INDEX `fk_Messages_Users2_idx` (`uid_from` ASC),
-          CONSTRAINT `fk_Messages_Users1`
-            FOREIGN KEY (`uid_to`)
-            REFERENCES `garrulous`.`Users` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION,
-          CONSTRAINT `fk_Messages_Users2`
-            FOREIGN KEY (`uid_from`)
-            REFERENCES `garrulous`.`Users` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION)
-        ENGINE = InnoDB
-        :return:
+        CREATE TABLE IF NOT EXISTS `garrulous`.`messages` (
+          `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `uid_message_from` INTEGER,
+          `uid_message_to` INTEGER,
+          `subject` TEXT,
+          `message` TEXT,
+          `is_read` TEXT,
+          `date_time` TEXT
+        )
         """
         pass
 
@@ -78,4 +65,4 @@ class Messages(Database):
             d['subject'] = row[2]
             d['is_read'] = row[3]
             d['date_time'] = row[4]
-        return uid
+        return objects_list

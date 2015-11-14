@@ -26,27 +26,20 @@ from Database import Database
 class Friendships(Database):
     def __init__(self):
         super(Friendships, self).__init__()
-
+    
+    # Create friendship table if not exist 
     def createIfNotExists(self):
         """
-        CREATE TABLE IF NOT EXISTS `garrulous`.`Friendships` (
-          `friendshipid` INT(11) NOT NULL,
-          `friendswith` INT(11) NOT NULL,
-          `userid` INT(11) NOT NULL,
-          PRIMARY KEY (`friendshipid`, `userid`, `friendswith`),
-          INDEX `fk_Friendships_Users_idx` (`userid` ASC),
-          CONSTRAINT `fk_Friendships_Users`
-            FOREIGN KEY (`userid`)
-            REFERENCES `garrulous`.`Users` (`id`)
-            ON DELETE NO ACTION
-            ON UPDATE NO ACTION)
-        ENGINE = InnoDB
-        :return:
+        CREATE TABLE IF NOT EXISTS `friendships` (
+          `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `uid` INTEGER,
+          `uid_connected_with` INTEGER
+        )
         """
         pass
 
     # Get Friendships By User ID.
-    def GetFriendshipsByUID(self, uid):
+    def getFriendshipsByUID(self, uid):
         try:
             self.db_cursor.execute("SELECT uid_connected_with FROM friendships WHERE uid=?", (uid))
             rows = self.db_cursor.fetchall()
