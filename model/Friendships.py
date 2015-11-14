@@ -2,7 +2,7 @@
 # Authors: Michael Pierre and Richard Meyers
 
 """
-Copyright (C) <year>  <name of author>
+Copyright (C) 2015
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -45,8 +45,8 @@ class Friendships(Database):
         """
         pass
 
-    # Read Friendships By User ID.
-    def ReadFriendshipsByUID(self, uid):
+    # Get Friendships By User ID.
+    def GetFriendshipsByUID(self, uid):
         try:
             self.db_cursor.execute("SELECT uid_connected_with FROM friendships WHERE uid=?", (uid))
             rows = self.db_cursor.fetchall()
@@ -57,12 +57,11 @@ class Friendships(Database):
                 objects_list.append(d)
         except Exception, e:
             raise e
-        print uid
 
     # Delete
     def DeleteFriend(self,uid, friend_uid):
         try:
-            self.db_cursor.execute("DELETE FROM friendships WHERE uid= ? AND uid_connected_with=?", \
+            self.db_cursor.execute("DELETE FROM friendships WHERE uid=? AND uid_connected_with=?",
                 (uid, friend_uid))
         except Exception, e:
             raise e

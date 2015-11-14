@@ -2,7 +2,7 @@
 # Authors: Michael Pierre and Richard Meyers
 
 """
-Copyright (C) <year>  <name of author>
+Copyright (C) 2015
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ class Users(Database):
         try:
             self.db_cursor.execute("INSERT INTO users (first_name,last_name,email,password) \
                 VALUES (?,?,?,?) ", (first_name, last_name, email, password))
+            self.db_cursor.commit()
         except Exception, e:
             raise e
 
@@ -61,6 +62,7 @@ class Users(Database):
         try:
             self.db_cursor.execute("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
                 WHERE uid=?", (first_name, last_name, email, password, uid))
+            self.db_cursor.commit()
         except Exception, e:
             raise e
 
