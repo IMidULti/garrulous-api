@@ -1,17 +1,41 @@
-__author__ = 'Richard Meyers'
+# Garrulous API
+# Authors: Michael Pierre and Richard Meyers
+
+"""
+Copyright (C) <year>  <name of author>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 
 import os
 import cherrypy
-import sqlite3
 import json
+
+from model.Users import Users
+from model.Friendships import Friendships
+from model.Messages import Messages
+from model.AboutUsers import AboutUsers
 
 class SiteIndex(object):
     exposed = True
 
     def GET(self):
         cherrypy.response.headers['Content-Type'] = 'text/html'
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        print(base_dir)
         try:
-            f = open('html/index.html')
+            f = open(base_dir + '/view/index.html')
             content = f.readlines()
             f.close()
         except IOError:
@@ -97,18 +121,6 @@ class AuthApi(object):
 
 
 if __name__ == '__main__':
-    #get SQLite started.
-    conn = sqlite3.connect('database.db')
-    #The database needs to be queried here. If the
-    # tables don't exist they need to be created.
-    # Add the schema here.
-    db_cursor = conn.cursor()
-
-    #This is just an example
-    """db_cursor.execute("CREATE TABLE IF NOT EXISTS `abuses` (" +
-                      "`abuse_id` int(11) NOT NULL AUTO_INCREMENT," +
-                      "`user_id` int(11) NOT NULL DEFAULT '0',")"""
-
     conf = {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),
@@ -132,6 +144,9 @@ if __name__ == '__main__':
     cherrypy.config.update({'environment': 'production'})
     cherrypy.tree.mount(SiteIndex(), '/', conf)
     cherrypy.tree.mount(SiteApi(), '/v1/', api_conf)
+    cherrypy.tree.mount(SiteApi().user, '/user/', api_conf)
+    cherrypy.tree.mount(SiteApi().msg, '/msg/', api_conf)
+    cherrypy.tree.mount(SiteApi().user, '/friend/', api_conf)
 
     cherrypy.engine.start()
     cherrypy.engine.block()
