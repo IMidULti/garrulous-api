@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import collections
+import hashlib
 
 from Database import Database
 
@@ -30,9 +31,11 @@ class Users(Database):
     def createIfNotExists(self):
         self.write("""CREATE TABLE IF NOT EXISTS `users` (
           `uid` INTEGER PRIMARY KEY AUTOINCREMENT,
+          `username` TEXT,
           `first_name` TEXT,
           `last_name` TEXT,
           `email` TEXT,
+          `phone` TEXT,
           `password` TEXT
         )""")
 
@@ -40,48 +43,45 @@ class Users(Database):
     # Create New User
     def createUser(self, user_name, password, first_name=None, last_name=None, email=None, phone=None):
         #set the datejoined column from inside this method
-        self.write("INSERT INTO users (first_name,last_name,email,password) "
-                   "VALUES (%s,%s,%s,%s) " % (first_name, last_name, email, password))
+        self.write("INSERT INTO users (first_name,last_name,email,password,phone) "
+                   "VALUES (%s,%s,%s,%s,%s) " % (first_name, last_name, email, hashlib.md5(password),phone))
 
 
     def updateUserByUid(self, uid, user_name=None, password=None, first_name=None, last_name=None, email=None,
                         phone=None):
-        try:
-            self.db_cursor.execute("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
-                WHERE uid=?", (first_name, last_name, email, password, uid))
-            self.db_cursor.commit()
-        except Exception, e:
-            raise e
+        # This needs to build the query out of the amount of parameters that exist. That way a all the existing
+        # data doesn't get overwritten.
+        self.write("UPDATE users SET first_name=%s, last_name=%s, email=%s, password=%s \
+WHERE uid=%s" % (first_name, last_name, email, password, uid))
 
-    # Read
     # Read All Users
     def getUsers(self):
-        self.db_cursor.execute("SELECT uid, first_name, last_name, email, password FROM users")
-        rows = self.db_cursor.fetchall()
+        # We are not returning all the rows
+        # We definitely don't want to return the password column, that is only used for auth.
+        # There should be the option of passing in the row quantity.
+        rows = self.query("SELECT uid, username, first_name, last_name, email FROM users")
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
             d['uid'] = row[0]
-            d['first_name'] = row[1]
-            d['last_name'] = row[2]
-            d['email'] = row[3]
-            d['password'] = row[4]
+            d['username'] = row[1]
+            d['first_name'] = row[2]
+            d['last_name'] = row[3]
+            d['email'] = row[4]
             objects_list.append(d)
         return objects_list
 
     # Read User Information By User ID.
     def getUserByUID(self, uid):
-        uid = (uid,)
-        self.db_cursor.execute('SELECT uid, first_name, last_name, email, password FROM users WHERE uid=?', uid)
-        rows = self.db_cursor.fetchall()
+        rows = self.query('SELECT uid, first_name, last_name, email FROM users WHERE uid=%s' % uid)
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
             d['uid'] = row[0]
-            d['first_name'] = row[1]
-            d['last_name'] = row[2]
-            d['email'] = row[3]
-            d['password'] = row[4]
+            d['username'] = row[1]
+            d['first_name'] = row[2]
+            d['last_name'] = row[3]
+            d['email'] = row[4]
             objects_list.append(d)
         return objects_list
 

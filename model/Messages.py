@@ -33,28 +33,37 @@ class Messages(Database):
           `id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `uid_message_from` INTEGER,
           `uid_message_to` INTEGER,
-          `subject` TEXT,
           `message` TEXT,
           `is_read` TEXT,
-          `date_time` TEXT
+          `date_time` INTEGER
         )""")
 
     def getMessageById(self, id):
-        pass
+        rows = self.query('SELECT id, uid_message_from, uid_message_to, message, '
+                          'is_read, date_time FROM messages where id = %s' % id)
+        objects_list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['id'] = row[0]
+            d['uid_message_from'] = row[1]
+            d['uid_message_to'] = row[2]
+            d['message'] = row[3]
+            d['is_read'] = row[4]
+            d['date_time'] = row[5]
+        return objects_list
 
     def updateMessageById(self, id, message=None, datetime=None, id_read=None):
         pass
 
     def createMessage(self, from_id, to_id, message, datetime):
-        # Default is_read to false
-        pass
+        self.write('INSERT INTO MESSAGES (uid_message_from, uid_message_to, message, is_read, date_time) VALUES '
+                   '(%s,%s,%s,%s,%s)' % (from_id, to_id, message, 0, datetime))
 
     # Read Messages By User IDs.
     def getMessageThread(self, to_id, from_id, time_constraint=None):
-        self.db_cursor.execute('SELECT uid_message_from, uid_message_to, subject, \
-            message, is_read, date_time WHERE uid_message_to=? AND uid_message_from=?',
-            (uid, sender_id))
-        rows = self.db_cursor.fetchall()
+        rows = self.query('SELECT uid_message_from, uid_message_to, message, '
+                               'is_read, date_time WHERE uid_message_to=%s AND uid_message_from=%s' %
+                               (to_id, from_id))
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()

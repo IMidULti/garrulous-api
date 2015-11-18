@@ -67,6 +67,8 @@ class UserApi(object):
 
     @cherrypy.tools.json_out()
     def POST(self):
+        users = Users()
+        users.createUser()
         return {'error': True, 'msg': "Error during request"}
 
     # For creating a new user
