@@ -52,8 +52,8 @@ class SiteApi(object):
         self.auth = AuthApi()
         self.friend = FriendApi()
 
-    def GET(self):
-        return "API for Garrulous. Read API documentation to use /v1/ resources."
+    """def GET(self):
+        return "API for Garrulous. Read API documentation to use /v1/ resources."""""
 
 #Create User
 #Updates user
@@ -65,10 +65,12 @@ class UserApi(object):
     def GET(self):
         return {'error': True, 'msg': "Error during request"}
 
+    @cherrypy.expose
     @cherrypy.tools.json_out()
+    @cherrypy.tools.json_in()
     def POST(self):
-        users = Users()
-        users.createUser()
+        #users = Users()
+        #users.createUser()
         input_json = cherrypy.request.json
         try:
             return input_json
@@ -117,12 +119,13 @@ class MessageApi(object):
     def PUT(self):
         return {'error': True, 'msg': "Error during request"}
 
+@cherrypy.popargs('username', 'password')
 class AuthApi(object):
     exposed = True
 
     # Get auth token back
     @cherrypy.tools.json_out()
-    def GET(self, username=None, password=None):
+    def GET(self, username, password):
         if username and password:
             return {'error': False, 'msg': "Username:" + username + " Password: " + password}
         return {'error': True, 'msg': "Error during request"}
@@ -160,6 +163,7 @@ if __name__ == '__main__':
     cherrypy.tree.mount(SiteApi().user, '/user/', api_conf)
     cherrypy.tree.mount(SiteApi().msg, '/msg/', api_conf)
     cherrypy.tree.mount(SiteApi().user, '/friend/', api_conf)
+    cherrypy.tree.mount(SiteApi().auth, '/auth/', api_conf)
 
     cherrypy.engine.start()
     cherrypy.engine.block()
