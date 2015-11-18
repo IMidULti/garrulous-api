@@ -28,7 +28,6 @@ class Database(object):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         db_path = os.path.join(os.path.dirname(base_dir), "database")
         db_path = os.path.join(db_path, "garrulous.db")
-        print(db_path)
         self.conn = sqlite3.connect(db_path)
         self.db_cursor = self.conn.cursor()
 

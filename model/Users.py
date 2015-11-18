@@ -40,12 +40,8 @@ class Users(Database):
     # Create New User
     def createUser(self, user_name, password, first_name=None, last_name=None, email=None, phone=None):
         #set the datejoined column from inside this method
-        try:
-            self.db_cursor.execute("INSERT INTO users (first_name,last_name,email,password) \
-                VALUES (?,?,?,?) ", (first_name, last_name, email, password))
-            self.db_cursor.commit()
-        except Exception, e:
-            raise e
+        self.write("INSERT INTO users (first_name,last_name,email,password) "
+                   "VALUES (%s,%s,%s,%s) " % (first_name, last_name, email, password))
 
 
     def updateUserByUid(self, uid, user_name=None, password=None, first_name=None, last_name=None, email=None,
