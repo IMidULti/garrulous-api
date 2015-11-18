@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sqlite3
 import os
+import logging
 
 
 class Database(object):

@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
 import hashlib
+import logging
 
 from Database import Database
 

@@ -21,11 +21,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import cherrypy
 import json
+import logging
 
 from model.Users import Users
 from model.Friendships import Friendships
 from model.Messages import Messages
 from model.AboutUsers import AboutUsers
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+handler = logging.FileHandler('logs/garrulous.log')
+handler.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+# add the handlers to the logger
+logger.addHandler(handler)
 
 class SiteIndex(object):
     exposed = True
@@ -33,7 +46,6 @@ class SiteIndex(object):
     def GET(self):
         cherrypy.response.headers['Content-Type'] = 'text/html'
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        print(base_dir)
         try:
             f = open(base_dir + '/view/index.html')
             content = f.readlines()
@@ -132,6 +144,8 @@ class AuthApi(object):
 
 
 if __name__ == '__main__':
+    # Run the code to create the DB tables if they don't exists.
+    # This is necessary for a fresh run of the application.
     tables = (Users, AboutUsers, Friendships, Messages)
     for table in tables:
         instance = table()
@@ -157,6 +171,7 @@ if __name__ == '__main__':
             'tools.response_headers.headers': [('Content-Type', 'text/plain')],
         }
     }
+    # Production mode is so that it does not display a stack trace to the users on 500 errors.
     cherrypy.config.update({'environment': 'production'})
     cherrypy.tree.mount(SiteIndex(), '/', conf)
     cherrypy.tree.mount(SiteApi(), '/v1/', api_conf)

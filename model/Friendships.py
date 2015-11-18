@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
 import sqlite3
+import logging
 
 from Database import Database
 
