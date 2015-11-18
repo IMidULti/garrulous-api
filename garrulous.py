@@ -48,7 +48,7 @@ class SiteApi(object):
 
     def __init__(self):
         self.user = UserApi()
-        self.msg  = MessageApi()
+        self.msg = MessageApi()
         self.auth = AuthApi()
         self.friend = FriendApi()
 
@@ -121,6 +121,8 @@ class AuthApi(object):
 
 
 if __name__ == '__main__':
+    user = Users()
+    user.createIfNotExists()
     conf = {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),

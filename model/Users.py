@@ -28,16 +28,13 @@ class Users(Database):
         super(Users, self).__init__()
     # Create user table is not exist.    
     def createIfNotExists(self):
-        """
-        CREATE TABLE IF NOT EXISTS `users` (
+        self.write("""CREATE TABLE IF NOT EXISTS `users` (
           `uid` INTEGER PRIMARY KEY AUTOINCREMENT,
           `first_name` TEXT,
           `last_name` TEXT,
           `email` TEXT,
           `password` TEXT
-        )
-        """
-        pass
+        )""")
 
     # Create
     # Create New User

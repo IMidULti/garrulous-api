@@ -62,4 +62,4 @@ docs/_build/
 # PyBuilder
 target/
 
-database.db
+database/garrulous.db

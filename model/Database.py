@@ -19,17 +19,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import sqlite3
-import json
 import os
-import collections
 
 class Database(object):
     def __init__(self):
         super(Database, self).__init__()
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_dir + "../database", "garrulous.db")
-        #Here just to debug the path of the db file
+        db_path = os.path.join(base_dir + "\..\database", "garrulous.db")
         print(db_path)
         self.conn = sqlite3.connect(db_path)
         self.db_cursor = self.conn.cursor()
+
+    def write(self, sql):
+        """
+        Use this method for queries that do not return rows.
+        :param sql:
+        :return:
+        """
+        try:
+            with self.conn:
+                self.conn.execute(sql)
+        except sqlite3.IntegrityError:
+            print "Could not run sql: " + sql
+
+    def query(self, sql):
+        """
+        Only use this when a query returns rows.
+        :param sql:
+        :return:
+        """
+        try:
+            self.db_cursor.execute(sql)
+            return self.db_cursor.fetchall()
+        except sqlite3.IntegrityError:
+            print "Could not run sql: " + sql
+
 
