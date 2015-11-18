@@ -65,7 +65,6 @@ class UserApi(object):
     def GET(self):
         return {'error': True, 'msg': "Error during request"}
 
-    @cherrypy.tools.json.int()
     @cherrypy.tools.json_out()
     def POST(self):
         users = Users()
