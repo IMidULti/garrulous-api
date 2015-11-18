@@ -121,8 +121,11 @@ class AuthApi(object):
 
 
 if __name__ == '__main__':
-    user = Users()
-    user.createIfNotExists()
+    tables = (Users, AboutUsers, Friendships, Messages)
+    for table in tables:
+        instance = table()
+        instance.createIfNotExists()
+
     conf = {
         '/': {
             'request.dispatch': cherrypy.dispatch.MethodDispatcher(),

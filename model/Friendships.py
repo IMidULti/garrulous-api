@@ -29,14 +29,11 @@ class Friendships(Database):
     
     # Create friendship table if not exist 
     def createIfNotExists(self):
-        """
-        CREATE TABLE IF NOT EXISTS `friendships` (
+        self.write("""CREATE TABLE IF NOT EXISTS `friendships` (
           `id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `uid` INTEGER,
           `uid_connected_with` INTEGER
-        )
-        """
-        pass
+        )""")
 
     # Get Friendships By User ID.
     def getFriendshipsByUID(self, uid):

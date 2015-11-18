@@ -21,11 +21,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sqlite3
 import os
 
+
 class Database(object):
     def __init__(self):
         super(Database, self).__init__()
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_dir + "\..\database", "garrulous.db")
+        db_path = os.path.join(os.path.dirname(base_dir), "database")
+        db_path = os.path.join(db_path, "garrulous.db")
         print(db_path)
         self.conn = sqlite3.connect(db_path)
         self.db_cursor = self.conn.cursor()

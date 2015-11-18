@@ -19,13 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import collections
-import sqlite3
 
 from Database import Database
 
 class Users(Database):
     def __init__(self):
         super(Users, self).__init__()
+
     # Create user table is not exist.    
     def createIfNotExists(self):
         self.write("""CREATE TABLE IF NOT EXISTS `users` (

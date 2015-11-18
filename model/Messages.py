@@ -26,10 +26,10 @@ from Database import Database
 class Messages(Database):
     def __init__(self):
         super(Messages, self).__init__()
+
     # Crate Message Database if not exist.
     def createIfNotExists(self):
-        """
-        CREATE TABLE IF NOT EXISTS `garrulous`.`messages` (
+        self.write("""CREATE TABLE IF NOT EXISTS `messages` (
           `id` INTEGER PRIMARY KEY AUTOINCREMENT,
           `uid_message_from` INTEGER,
           `uid_message_to` INTEGER,
@@ -37,9 +37,7 @@ class Messages(Database):
           `message` TEXT,
           `is_read` TEXT,
           `date_time` TEXT
-        )
-        """
-        pass
+        )""")
 
     def getMessageById(self, id):
         pass

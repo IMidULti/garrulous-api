@@ -29,20 +29,14 @@ class AboutUsers(Database):
     
     # Create about_user database if not exist.
     def createIfNotExists(self):
-        """
-        CREATE TABLE IF NOT EXISTS `about_user` (
+        self.write("""CREATE TABLE IF NOT EXISTS `about_user` (
           `id`  INTEGER PRIMARY KEY AUTOINCREMENT,
           `uid` INTEGER,
           `age` TEXT,
           `about_me` TEXT,
           `location` TEXT,
           `university` TEXT
-        )
-        """
-        pass
-
-    def createAboutUser(self, uid, title, content):
-        pass
+        )""")
 
     def getAboutUserById(self, id):
         pass
