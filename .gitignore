@@ -63,3 +63,5 @@ docs/_build/
 target/
 
 database/garrulous.db
+
+etc/garrulous.yml

@@ -23,6 +23,7 @@ import cherrypy
 import json
 import logging
 import yaml
+from itsdangerous import URLSafeSerializer
 
 from model.Users import Users
 from model.Friendships import Friendships
@@ -102,7 +103,7 @@ class UserApi(object):
 
         users = Users()
         input_json = cherrypy.request.json
-        users.createUser(input_json['username'], input_json['password'], input_json['email'])
+        users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
 
     # For creating a new user
     @cherrypy.tools.json_out()
@@ -153,8 +154,14 @@ class AuthApi(object):
     # Get auth token back
     @cherrypy.tools.json_out()
     def GET(self, username, password):
+        users = Users()
         if username and password:
-            return {'error': False, 'msg': "Username:" + username + " Password: " + password}
+            uid = users.authenticateUser(username=username, password=password)
+            if uid:
+                s = URLSafeSerializer(Config.cfg['auth']['key'])
+                return {'error': False, 'msg': "No Error", 'token': s.dumps(['uid', 'username'])}
+            else:
+                raise cherrypy.HTTPError("403", "Not authenticated")
         return {'error': True, 'msg': "Error during request"}
 
 

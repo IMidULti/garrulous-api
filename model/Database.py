@@ -39,7 +39,6 @@ class Database(object):
         :param sql:
         :return:
         """
-        pprint.pprint(params)
         try:
             with self.conn:
                 self.conn.execute(sql, params)
@@ -52,10 +51,21 @@ class Database(object):
         :param sql:
         :return:
         """
-        pprint.pprint(params)
         try:
             self.db_cursor.execute(sql, params)
             return self.db_cursor.fetchall()
+        except sqlite3.IntegrityError:
+            print "Could not run sql: " + sql
+
+    def queryOne(self, sql, params=()):
+        """
+        Only use this when a query returns rows.
+        :param sql:
+        :return:
+        """
+        try:
+            self.db_cursor.execute(sql, params)
+            return self.db_cursor.fetchone()
         except sqlite3.IntegrityError:
             print "Could not run sql: " + sql
 

@@ -61,12 +61,18 @@ class Users(Database):
         self.write("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
 WHERE uid=?", (first_name, last_name, email, password, uid))
 
+    def authenticateUser(self, password=None, username=None, phone=None, email=None):
+        hash = hashlib.md5(password)
+        hashword = hash.hexdigest()
+        rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))
+        return rows
+
     # Read All Users
     def getUsers(self):
         # We are not returning all the rows
         # We definitely don't want to return the password column, that is only used for auth.
         # There should be the option of passing in the row quantity.
-        rows = self.query("SELECT uid, username, first_name, last_name, email FROM users")
+        rows = self.query("SELECT uid, username, first_name, last_name, email,  FROM users")
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
