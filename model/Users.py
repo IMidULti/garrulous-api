@@ -20,7 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import collections
 import hashlib
+import time
 import logging
+import math
 
 from Database import Database
 
@@ -37,23 +39,27 @@ class Users(Database):
           `last_name` TEXT,
           `email` TEXT,
           `phone` TEXT,
-          `password` TEXT
+          `password` TEXT,
+          `date_joined` INTEGER
         )""")
 
     # Create
     # Create New User
-    def createUser(self, user_name, password, first_name=None, last_name=None, email=None, phone=None):
-        #set the datejoined column from inside this method
-        self.write("INSERT INTO users (first_name,last_name,email,password,phone) "
-                   "VALUES (%s,%s,%s,%s,%s) " % (first_name, last_name, email, hashlib.md5(password),phone))
-
+    def createUser(self, user_name, password, first_name="", last_name="", email="", phone=""):
+        #This time is the date they joined
+        times = int(time.time())
+        hash = hashlib.md5(password)
+        hashword = hash.hexdigest()
+        self.write("INSERT INTO users (username,first_name,last_name,email,password,phone,date_joined) "
+                   "VALUES (?,?,?,?,?,?,?) ", (user_name, first_name, last_name, email, hashword,
+                                                       phone, times))
 
     def updateUserByUid(self, uid, user_name=None, password=None, first_name=None, last_name=None, email=None,
                         phone=None):
         # This needs to build the query out of the amount of parameters that exist. That way a all the existing
         # data doesn't get overwritten.
-        self.write("UPDATE users SET first_name=%s, last_name=%s, email=%s, password=%s \
-WHERE uid=%s" % (first_name, last_name, email, password, uid))
+        self.write("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
+WHERE uid=?", (first_name, last_name, email, password, uid))
 
     # Read All Users
     def getUsers(self):

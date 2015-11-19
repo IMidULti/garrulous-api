@@ -22,11 +22,17 @@ import os
 import cherrypy
 import json
 import logging
+import yaml
 
 from model.Users import Users
 from model.Friendships import Friendships
 from model.Messages import Messages
 from model.AboutUsers import AboutUsers
+
+from module.Config import Config
+
+# parse the yml file and load it up.
+Config.load_config()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -39,6 +45,7 @@ handler.setFormatter(formatter)
 
 # add the handlers to the logger
 logger.addHandler(handler)
+
 
 class SiteIndex(object):
     exposed = True
@@ -75,19 +82,27 @@ class UserApi(object):
     # this can return username for searching other people.
     @cherrypy.tools.json_out()
     def GET(self):
-        return {'error': True, 'msg': "Error during request"}
+        try:
+            users = Users()
+            return users.getUsers()
+        except:
+            return {'error': True, 'msg': "Error during request"}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def POST(self):
-        #users = Users()
-        #users.createUser()
+
+        """This code right here is jsut for testing
         input_json = cherrypy.request.json
         try:
             return input_json
         except:
-            return {'error': True, 'msg': "Error during request"}
+            return {'error': True, 'msg': "Error during request"}"""
+
+        users = Users()
+        input_json = cherrypy.request.json
+        users.createUser(input_json['username'], input_json['password'], input_json['email'])
 
     # For creating a new user
     @cherrypy.tools.json_out()
@@ -172,7 +187,7 @@ if __name__ == '__main__':
         }
     }
     # Production mode is so that it does not display a stack trace to the users on 500 errors.
-    cherrypy.config.update({'environment': 'production'})
+    #cherrypy.config.update({'environment': 'production'})
     cherrypy.tree.mount(SiteIndex(), '/', conf)
     cherrypy.tree.mount(SiteApi(), '/v1/', api_conf)
     cherrypy.tree.mount(SiteApi().user, '/user/', api_conf)
