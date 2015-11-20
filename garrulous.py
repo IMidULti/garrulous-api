@@ -38,7 +38,10 @@ Config.load_config()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-handler = logging.FileHandler('logs/garrulous.log')
+log_file = os.path.dirname(os.path.abspath(__file__))
+log_file = os.path.join(log_file, "logs")
+log_file = os.path.join(log_file, "garrulous.log")
+handler = logging.FileHandler(log_file)
 handler.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -47,6 +50,7 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
+logger.debug("testing logger")
 
 class SiteIndex(object):
     exposed = True
@@ -93,14 +97,6 @@ class UserApi(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def POST(self):
-
-        """This code right here is jsut for testing
-        input_json = cherrypy.request.json
-        try:
-            return input_json
-        except:
-            return {'error': True, 'msg': "Error during request"}"""
-
         users = Users()
         input_json = cherrypy.request.json
         users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
