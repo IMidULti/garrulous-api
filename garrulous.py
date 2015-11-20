@@ -136,7 +136,11 @@ class UserApi(ApiEndpoint):
         """
         users = Users()
         input_json = cherrypy.request.json
-        users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
+        try:
+            users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
+        except TypeError:
+            users.createUser(input_json[0]['username'], input_json[0]['password'], email=input_json[0]['email'])
+        return {'error': False, 'msg': "message sent"}
 
     # For creating a new user
     @cherrypy.tools.json_out()
@@ -199,8 +203,12 @@ class MessageApi(ApiEndpoint):
         input_json = cherrypy.request.json
         msg = Messages()
         times = int(time.time())
-        msg.createMessage(uid, input_json['to_id'], input_json['message'], times)
-        return {'error': True, 'msg': "Error during request"}
+        try:
+            msg.createMessage(uid, input_json['to_id'], input_json['message'], times)
+            return {'error': False, 'msg': "message sent"}
+        except TypeError:
+            msg.createMessage(uid, input_json[0]['to_id'], input_json[0]['message'], times)
+            return {'error': False, 'msg': "message sent"}
 
 @cherrypy.popargs('username', 'password')
 class AuthApi(ApiEndpoint):
