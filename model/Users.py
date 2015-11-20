@@ -61,11 +61,14 @@ class Users(Database):
         self.write("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
 WHERE uid=?", (first_name, last_name, email, password, uid))
 
-    def authenticateUser(self, username=None, password=None, phone=None, email=None):
+    def authenticateUser(self, username="", password="", phone="", email=""):
         hash = hashlib.md5(password)
         hashword = hash.hexdigest()
         # This gets the one row and returns only the first column
-        rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))[0]
+        try:
+            rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))[0]
+        except TypeError:
+            return False
         return rows
 
     # Read All Users
