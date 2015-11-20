@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import collections
 import sqlite3
 import logging
+import pprint
 
 from Database import Database
 
@@ -58,19 +59,22 @@ class Messages(Database):
 
     def createMessage(self, from_id, to_id, message, datetime):
         self.write('INSERT INTO MESSAGES (uid_message_from, uid_message_to, message, is_read, date_time) VALUES '
-                   '(%s,%s,%s,%s,%s)' % (from_id, to_id, message, 0, datetime))
+                   '(?,?,?,?,?)', (from_id, to_id, message, 0, datetime))
 
     # Read Messages By User IDs.
-    def getMessageThread(self, to_id, from_id, time_constraint=None):
+    def getMessageThread(self, from_id, to_id, time_constraint=None):
         rows = self.query('SELECT uid_message_from, uid_message_to, message, '
-                               'is_read, date_time WHERE uid_message_to=%s AND uid_message_from=%s' %
-                               (to_id, from_id))
+                               'is_read, date_time FROM messages WHERE '
+                               '(uid_message_to=? AND uid_message_from=?) OR'
+                               '(uid_message_from=? AND uid_message_to=?)',
+                               (to_id, from_id, to_id, from_id))
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
             d['uid_message_from'] = row[0]
             d['uid_message_to'] = row[1]
-            d['subject'] = row[2]
+            d['message'] = row[2]
             d['is_read'] = row[3]
             d['date_time'] = row[4]
+            objects_list.append(d)
         return objects_list

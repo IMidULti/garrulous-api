@@ -25,6 +25,7 @@ import logging
 import yaml
 from itsdangerous import URLSafeSerializer
 import pprint
+import time
 
 from model.Users import Users
 from model.Friendships import Friendships
@@ -166,21 +167,23 @@ class FriendApi(ApiEndpoint):
 
 # Create Message
 # Get Message
-@cherrypy.popargs('token', 'from_uid', 'start_timestamp', 'end_timestamp')
+@cherrypy.popargs('token', 'to_uid', 'start_timestamp', 'end_timestamp')
 class MessageApi(ApiEndpoint):
     exposed = True
 
     # Retrieve
     @cherrypy.tools.json_out()
-    def GET(self, token, from_uid, start_timestamp, end_timestamp):
+    def GET(self, token, to_uid=None, start_count=None, end_count=None):
         """
         Return messages to the client.
 
         :return:
         """
-        uid = self.authenticate(token)
-
-        return {'error': True, 'msg': "Error during request"}
+        from_uid = self.authenticate(token)
+        msg = Messages()
+        times = int(time.time())
+        return msg.getMessageThread(from_uid, to_uid, None)
+        #return {'error': True, 'msg': "Error during request"}
 
     # Send
     @cherrypy.expose
@@ -195,7 +198,8 @@ class MessageApi(ApiEndpoint):
         uid = self.authenticate(token)
         input_json = cherrypy.request.json
         msg = Messages()
-        msg.createMessage(uid, input_json['to_id'], input_json['message'], )
+        times = int(time.time())
+        msg.createMessage(uid, input_json['to_id'], input_json['message'], times)
         return {'error': True, 'msg': "Error during request"}
 
 @cherrypy.popargs('username', 'password')
