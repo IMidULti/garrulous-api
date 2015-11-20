@@ -24,6 +24,7 @@ import json
 import logging
 import yaml
 from itsdangerous import URLSafeSerializer
+import pprint
 
 from model.Users import Users
 from model.Friendships import Friendships
@@ -67,6 +68,28 @@ class SiteIndex(object):
 
         return content
 
+class ApiEndpoint(object):
+
+    def check_token(self, token):
+        s = URLSafeSerializer(Config.cfg['auth']['key'])
+        unserialized = s.loads(token)
+        user = Users()
+        if user.getUserByUID(unserialized[0]):
+            return unserialized[0]
+        return False
+
+    def authenticate(self, token):
+        """
+        Returns the UID of the user if the token is valid.
+        :param token:
+        :return:
+        """
+        uid = self.check_token(token)
+        if uid:
+            return uid
+        else:
+            raise cherrypy.HTTPError("403", "Unauthorized")
+
 class SiteApi(object):
     exposed = True
 
@@ -76,17 +99,22 @@ class SiteApi(object):
         self.auth = AuthApi()
         self.friend = FriendApi()
 
-    """def GET(self):
-        return "API for Garrulous. Read API documentation to use /v1/ resources."""""
-
 #Create User
 #Updates user
-class UserApi(object):
+@cherrypy.popargs('token')
+class UserApi(ApiEndpoint):
     exposed = True
 
     # this can return username for searching other people.
     @cherrypy.tools.json_out()
-    def GET(self):
+    def GET(self,token):
+        """
+        This method needs to be limited based on something like UID, Name, etc.
+
+        Example GET looks like: http://localhost:8080/v1/user/WzEsInJpY2t5cmVtIl0.obTFbBDPmTY8Ve2e362d-UvArrc
+        :return:
+        """
+        uid = self.authenticate(token)
         try:
             users = Users()
             return users.getUsers()
@@ -97,6 +125,14 @@ class UserApi(object):
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def POST(self):
+        """
+        No Authentication here yet. They will need to use the app to create an account. Or the website.
+
+        Example POST looks like: http://localhost:8080/v1/user
+        HEADER: Content-Type: application/json
+        BODY: { "username": "rickyrem", "password":"blahblah", "email":"ricky@ricky.com" }
+        :return:
+        """
         users = Users()
         input_json = cherrypy.request.json
         users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
@@ -110,7 +146,7 @@ class UserApi(object):
     def DELETE(self):
         return {'error': True, 'msg': "Error during request"}
 
-class FriendApi(object):
+class FriendApi(ApiEndpoint):
     exposed = True
 
     # get lists of friends for this user
@@ -120,7 +156,7 @@ class FriendApi(object):
 
     # Add person to friends list
     @cherrypy.tools.json_out()
-    def PUT(self):
+    def POST(self):
         return {'error': True, 'msg': "Error during request"}
 
     # remove person from friends list
@@ -130,32 +166,58 @@ class FriendApi(object):
 
 # Create Message
 # Get Message
-class MessageApi(object):
+@cherrypy.popargs('token', 'from_uid', 'start_timestamp', 'end_timestamp')
+class MessageApi(ApiEndpoint):
     exposed = True
 
     # Retrieve
     @cherrypy.tools.json_out()
-    def GET(self):
+    def GET(self, token, from_uid, start_timestamp, end_timestamp):
+        """
+        Return messages to the client.
+
+        :return:
+        """
+        uid = self.authenticate(token)
+
         return {'error': True, 'msg': "Error during request"}
 
     # Send
+    @cherrypy.expose
     @cherrypy.tools.json_out()
-    def PUT(self):
+    @cherrypy.tools.json_in()
+    def POST(self, token):
+        """
+        Creates a new message
+
+        :return:
+        """
+        uid = self.authenticate(token)
+        input_json = cherrypy.request.json
+        msg = Messages()
+        msg.createMessage(uid, input_json['to_id'], input_json['message'], )
         return {'error': True, 'msg': "Error during request"}
 
 @cherrypy.popargs('username', 'password')
-class AuthApi(object):
+class AuthApi(ApiEndpoint):
     exposed = True
 
     # Get auth token back
     @cherrypy.tools.json_out()
     def GET(self, username, password):
+        """
+        Get the token to be used for authentication with the other endpoints.
+
+        :param username:
+        :param password:
+        :return:
+        """
         users = Users()
         if username and password:
             uid = users.authenticateUser(username=username, password=password)
             if uid:
                 s = URLSafeSerializer(Config.cfg['auth']['key'])
-                return {'error': False, 'msg': "No Error", 'token': s.dumps(['uid', 'username'])}
+                return {'error': False, 'msg': "No Error", 'token': s.dumps([uid, username])}
             else:
                 raise cherrypy.HTTPError("403", "Not authenticated")
         return {'error': True, 'msg': "Error during request"}

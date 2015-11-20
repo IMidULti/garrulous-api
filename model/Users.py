@@ -61,10 +61,11 @@ class Users(Database):
         self.write("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
 WHERE uid=?", (first_name, last_name, email, password, uid))
 
-    def authenticateUser(self, password=None, username=None, phone=None, email=None):
+    def authenticateUser(self, username=None, password=None, phone=None, email=None):
         hash = hashlib.md5(password)
         hashword = hash.hexdigest()
-        rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))
+        # This gets the one row and returns only the first column
+        rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))[0]
         return rows
 
     # Read All Users
@@ -72,7 +73,7 @@ WHERE uid=?", (first_name, last_name, email, password, uid))
         # We are not returning all the rows
         # We definitely don't want to return the password column, that is only used for auth.
         # There should be the option of passing in the row quantity.
-        rows = self.query("SELECT uid, username, first_name, last_name, email,  FROM users")
+        rows = self.query("SELECT uid, username, first_name, last_name, email FROM users")
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
@@ -86,15 +87,14 @@ WHERE uid=?", (first_name, last_name, email, password, uid))
 
     # Read User Information By User ID.
     def getUserByUID(self, uid):
-        rows = self.query('SELECT uid, first_name, last_name, email FROM users WHERE uid=%s' % uid)
+        row = self.queryOne('SELECT uid, username, first_name, last_name, email FROM users WHERE uid=%s' % uid)
         objects_list = []
-        for row in rows:
-            d = collections.OrderedDict()
-            d['uid'] = row[0]
-            d['username'] = row[1]
-            d['first_name'] = row[2]
-            d['last_name'] = row[3]
-            d['email'] = row[4]
-            objects_list.append(d)
+        d = collections.OrderedDict()
+        d['uid'] = row[0]
+        d['username'] = row[1]
+        d['first_name'] = row[2]
+        d['last_name'] = row[3]
+        d['email'] = row[4]
+        objects_list.append(d)
         return objects_list
 
