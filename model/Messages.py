@@ -58,16 +58,26 @@ class Messages(Database):
         pass
 
     def createMessage(self, from_id, to_id, message, datetime):
-        self.write('INSERT INTO MESSAGES (uid_message_from, uid_message_to, message, is_read, date_time) VALUES '
-                   '(?,?,?,?,?)', (from_id, to_id, message, 0, datetime))
+        if self.write('INSERT INTO MESSAGES (uid_message_from, uid_message_to, message, is_read, date_time) VALUES '
+                   '(?,?,?,?,?)', (from_id, to_id, message, 0, datetime)):
+            return True
+        return False
 
     # Read Messages By User IDs.
-    def getMessageThread(self, from_id, to_id, time_constraint=None):
-        rows = self.query('SELECT uid_message_from, uid_message_to, message, '
+    def getMessageThread(self, from_id, to_id, start_count=None, end_count=None):
+        if start_count and end_count:
+            rows = self.query('SELECT uid_message_from, uid_message_to, message, '
                                'is_read, date_time FROM messages WHERE '
                                '(uid_message_to=? AND uid_message_from=?) OR'
-                               '(uid_message_from=? AND uid_message_to=?)',
-                               (to_id, from_id, to_id, from_id))
+                               '(uid_message_from=? AND uid_message_to=?)'
+                               'LIMIT ?, ?;',
+                               (to_id, from_id, to_id, from_id, str(int(start_count) - 1), end_count))
+        else:
+            rows = self.query('SELECT uid_message_from, uid_message_to, message, '
+                                   'is_read, date_time FROM messages WHERE '
+                                   '(uid_message_to=? AND uid_message_from=?) OR'
+                                   '(uid_message_from=? AND uid_message_to=?)',
+                                   (to_id, from_id, to_id, from_id))
         objects_list = []
         for row in rows:
             d = collections.OrderedDict()
@@ -76,5 +86,29 @@ class Messages(Database):
             d['message'] = row[2]
             d['is_read'] = row[3]
             d['date_time'] = row[4]
+            objects_list.append(d)
+        return objects_list
+
+    def getUsersMessaged(self, uid):
+        """
+        Returns a relation between to people.
+
+        :param uid:
+        :return:
+        """
+
+        pprint.pprint(self.query('select * from messages;'))
+        rows = self.query('SELECT DISTINCT uid_message_from, uid_message_to FROM messages WHERE '
+                          'uid_message_to=? or uid_message_from=? '
+                          'GROUP BY uid_message_to, uid_message_from;',
+                          (uid, uid))
+        pprint.pprint(rows)
+        for row in rows:
+            pass
+        objects_list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['uid_message_from'] = row[0]
+            d['uid_message_to'] = row[1]
             objects_list.append(d)
         return objects_list

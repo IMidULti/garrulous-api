@@ -42,8 +42,10 @@ class Database(object):
         try:
             with self.conn:
                 self.conn.execute(sql, params)
+            return True
         except sqlite3.IntegrityError:
             print "Could not run sql: " + sql
+        return False
 
     def query(self, sql, params=()):
         """
@@ -56,6 +58,7 @@ class Database(object):
             return self.db_cursor.fetchall()
         except sqlite3.IntegrityError:
             print "Could not run sql: " + sql
+        return False
 
     def queryOne(self, sql, params=()):
         """
@@ -68,5 +71,6 @@ class Database(object):
             return self.db_cursor.fetchone()
         except sqlite3.IntegrityError:
             print "Could not run sql: " + sql
+        return False
 
 

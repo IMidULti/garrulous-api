@@ -24,6 +24,7 @@ import json
 import logging
 import yaml
 from itsdangerous import URLSafeSerializer
+import itsdangerous
 import pprint
 import time
 
@@ -72,12 +73,21 @@ class SiteIndex(object):
 class ApiEndpoint(object):
 
     def check_token(self, token):
+        """
+        Verifies the token. If the token is valid it will return the UID from the token. If it
+        is invalid, it will return False.
+
+        :param token:
+        :return:
+        """
         s = URLSafeSerializer(Config.cfg['auth']['key'])
-        unserialized = s.loads(token)
-        user = Users()
-        if user.getUserByUID(unserialized[0]):
-            return unserialized[0]
-        return False
+        try:
+            unserialized = s.loads(token)
+            return int(unserialized[0])
+        except itsdangerous.BadSignature:
+            # If the token is not valid.
+            logger.debug('User unauthorized.')
+            return False
 
     def authenticate(self, token):
         """
@@ -86,10 +96,19 @@ class ApiEndpoint(object):
         :return:
         """
         uid = self.check_token(token)
-        if uid:
+        user = Users()
+        if user.getUserByUID(str(uid)):
             return uid
         else:
+            logger.debug('Token data invalid. User unauthorized.')
             raise cherrypy.HTTPError("403", "Unauthorized")
+
+    def standardize_json(self, json):
+        if type(json) is list:
+            pprint.pprint(json)
+            return json[0]
+        elif type(json) is dict:
+            return json
 
 class SiteApi(object):
     exposed = True
@@ -102,23 +121,29 @@ class SiteApi(object):
 
 #Create User
 #Updates user
-@cherrypy.popargs('token')
+@cherrypy.popargs('token', 'uid')
 class UserApi(ApiEndpoint):
     exposed = True
 
     # this can return username for searching other people.
     @cherrypy.tools.json_out()
-    def GET(self,token):
+    def GET(self,token, uid=None):
         """
         This method needs to be limited based on something like UID, Name, etc.
 
-        Example GET looks like: http://localhost:8080/v1/user/WzEsInJpY2t5cmVtIl0.obTFbBDPmTY8Ve2e362d-UvArrc
+        Example GET looks like: http://garrulous.xyz/v1/user/WzEsInJpY2t5cmVtIl0.obTFbBDPmTY8Ve2e362d-UvArrc
+
+        Example GET based on username looks like:
+            http://garrulous.xyz/v1/user/WzEsInJpY2t5cmVtIl0.obTFbBDPmTY8Ve2e362d-UvArrc/2
         :return:
         """
         uid = self.authenticate(token)
         try:
             users = Users()
-            return users.getUsers()
+            if uid:
+                return users.getUserByUID(uid)
+            else:
+                return users.getUsers()
         except:
             return {'error': True, 'msg': "Error during request"}
 
@@ -127,24 +152,41 @@ class UserApi(ApiEndpoint):
     @cherrypy.tools.json_in()
     def POST(self):
         """
-        No Authentication here yet. They will need to use the app to create an account. Or the website.
+        No Authentication here yet. They will need to use the app to create an account, or the website.
 
         Example POST looks like: http://localhost:8080/v1/user
         HEADER: Content-Type: application/json
         BODY: { "username": "rickyrem", "password":"blahblah", "email":"ricky@ricky.com" }
         :return:
         """
-        users = Users()
-        input_json = cherrypy.request.json
-        try:
-            users.createUser(input_json['username'], input_json['password'], email=input_json['email'])
-        except TypeError:
-            users.createUser(input_json[0]['username'], input_json[0]['password'], email=input_json[0]['email'])
-        return {'error': False, 'msg': "message sent"}
 
-    # For creating a new user
+        users = Users()
+        json = self.standardize_json(cherrypy.request.json)
+        #pprint.pprint(json)
+        if users.createUser(user_name=json['user_name'], password=json['password'],
+                            first_name=json['first_name'], last_name=json['last_name']):
+            return {'error': False, 'msg': "message sent"}
+        else:
+            return {'error': True, 'msg': "Error during request"}
+
+    @cherrypy.expose
     @cherrypy.tools.json_out()
-    def PUT(self):
+    @cherrypy.tools.json_in()
+    # For creating a new user
+    def PUT(self, token):
+        """
+        This is used to update profile information. As HTTP PUT usage requires, the JSON in needs to have all of the
+        profile information. It cannot have only a single piece to be updated.
+
+        :return:
+        """
+        uid = self.authenticate(token)
+        json = self.standardize_json(cherrypy.request.json)
+        users = Users()
+        if uid:
+            if users.updateUserByUid(uid, user_name=json['username'], password=json['password'],
+                                     first_name=json['first_name'], last_name=json['last_name'], ):
+                return {'error': True, 'msg': "Updated user information for %s" % json['username']}
         return {'error': True, 'msg': "Error during request"}
 
     @cherrypy.tools.json_out()
@@ -171,44 +213,55 @@ class FriendApi(ApiEndpoint):
 
 # Create Message
 # Get Message
-@cherrypy.popargs('token', 'to_uid', 'start_timestamp', 'end_timestamp')
+@cherrypy.popargs('token', 'to_uid', 'start_count', 'end_count')
 class MessageApi(ApiEndpoint):
     exposed = True
 
-    # Retrieve
     @cherrypy.tools.json_out()
     def GET(self, token, to_uid=None, start_count=None, end_count=None):
         """
         Return messages to the client.
 
+        Doing a GET with only a token will return all the people they have talked to.
+        Doing a GET with the UID will result in them actually getting message from that thread.
+
         :return:
         """
+
         from_uid = self.authenticate(token)
         msg = Messages()
-        times = int(time.time())
-        return msg.getMessageThread(from_uid, to_uid, None)
-        #return {'error': True, 'msg': "Error during request"}
 
-    # Send
+        if to_uid:
+            if start_count and end_count:
+                data = msg.getMessageThread(from_uid, to_uid, start_count, end_count)
+            else:
+                data = msg.getMessageThread(from_uid, to_uid)
+        else:
+            data = msg.getUsersMessaged(from_uid)
+
+        if data:
+            return data
+        else:
+            return {'error': True, 'msg': "Error during request"}
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     @cherrypy.tools.json_in()
     def POST(self, token):
         """
-        Creates a new message
+        Creates a new message.
 
         :return:
         """
         uid = self.authenticate(token)
-        input_json = cherrypy.request.json
+        json = self.standardize_json(cherrypy.request.json)
+
         msg = Messages()
         times = int(time.time())
-        try:
-            msg.createMessage(uid, input_json['to_id'], input_json['message'], times)
+
+        if msg.createMessage(uid, json['to_id'], json['message'], times):
             return {'error': False, 'msg': "message sent"}
-        except TypeError:
-            msg.createMessage(uid, input_json[0]['to_id'], input_json[0]['message'], times)
-            return {'error': False, 'msg': "message sent"}
+        return {'error': True, 'msg': "Error during request"}
 
 @cherrypy.popargs('username', 'password')
 class AuthApi(ApiEndpoint):

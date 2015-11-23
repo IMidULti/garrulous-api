@@ -45,21 +45,24 @@ class Users(Database):
 
     # Create
     # Create New User
-    def createUser(self, user_name, password, first_name="", last_name="", email="", phone=""):
+    def createUser(self, user_name="", password="", first_name="", last_name="", email="", phone=""):
         #This time is the date they joined
         times = int(time.time())
         hash = hashlib.md5(password)
         hashword = hash.hexdigest()
-        self.write("INSERT INTO users (username,first_name,last_name,email,password,phone,date_joined) "
+        if self.write("INSERT INTO users (username,first_name,last_name,email,password,phone,date_joined) "
                    "VALUES (?,?,?,?,?,?,?) ", (user_name, first_name, last_name, email, hashword,
-                                                       phone, times))
+                                                       phone, times)):
+            return True
+        return False
+
 
     def updateUserByUid(self, uid, user_name=None, password=None, first_name=None, last_name=None, email=None,
                         phone=None):
         # This needs to build the query out of the amount of parameters that exist. That way a all the existing
         # data doesn't get overwritten.
-        self.write("UPDATE users SET first_name=?, last_name=?, email=?, password=? \
-WHERE uid=?", (first_name, last_name, email, password, uid))
+        self.write('UPDATE users SET first_name=?, last_name=?, email=?, password=? '
+                   'WHERE uid=?', (first_name, last_name, email, password, uid))
 
     def authenticateUser(self, username="", password="", phone="", email=""):
         hash = hashlib.md5(password)
@@ -90,7 +93,7 @@ WHERE uid=?", (first_name, last_name, email, password, uid))
 
     # Read User Information By User ID.
     def getUserByUID(self, uid):
-        row = self.queryOne('SELECT uid, username, first_name, last_name, email FROM users WHERE uid=%s' % uid)
+        row = self.queryOne("SELECT uid, username, first_name, last_name, email FROM users WHERE uid=?", (uid))
         objects_list = []
         d = collections.OrderedDict()
         d['uid'] = row[0]
@@ -101,3 +104,15 @@ WHERE uid=?", (first_name, last_name, email, password, uid))
         objects_list.append(d)
         return objects_list
 
+    # Read User Information By Username.
+    def getUserByUsername(self, username):
+        row = self.queryOne("SELECT uid, username, first_name, last_name, email FROM users WHERE username=%s" % username)
+        objects_list = []
+        d = collections.OrderedDict()
+        d['uid'] = row[0]
+        d['username'] = row[1]
+        d['first_name'] = row[2]
+        d['last_name'] = row[3]
+        d['email'] = row[4]
+        objects_list.append(d)
+        return objects_list
