@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import yaml
 import os
+import sys
 
 class Config:
 
@@ -30,5 +31,9 @@ class Config:
         etc_path = os.path.dirname(os.path.abspath(__file__))
         etc_path = os.path.join(os.path.dirname(etc_path), "etc")
         etc_path = os.path.join(etc_path, "garrulous.yml")
-        with open(etc_path, 'r') as ymlfile:
-            Config.cfg = yaml.load(ymlfile)
+        try:
+            with open(etc_path, 'r') as ymlfile:
+                Config.cfg = yaml.load(ymlfile)
+        except IOError:
+            print('Could not read config file %s' % etc_path)
+            sys.exit(1)

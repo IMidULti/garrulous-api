@@ -50,9 +50,13 @@ class Users(Database):
         times = int(time.time())
         hash = hashlib.md5(password)
         hashword = hash.hexdigest()
+
+        if self.username_exists(user_name):
+            return "Username already taken"
+
         if self.write("INSERT INTO users (username,first_name,last_name,email,password,phone,date_joined) "
-                   "VALUES (?,?,?,?,?,?,?) ", (user_name, first_name, last_name, email, hashword,
-                                                       phone, times)):
+                      "VALUES (?,?,?,?,?,?,?) ", (user_name, first_name, last_name, email, hashword,
+                      phone, times)):
             return True
         return False
 
@@ -61,18 +65,35 @@ class Users(Database):
                         phone=None):
         # This needs to build the query out of the amount of parameters that exist. That way a all the existing
         # data doesn't get overwritten.
-        self.write('UPDATE users SET first_name=?, last_name=?, email=?, password=? '
-                   'WHERE uid=?', (first_name, last_name, email, password, uid))
+        if self.write('UPDATE users SET user_name=?, password=?, first_name=?, last_name=? '
+                      'WHERE uid=?', (user_name, password, first_name, last_name)):
+            return True
+        return False
 
-    def authenticateUser(self, username="", password="", phone="", email=""):
+
+    def authenticateUser(self, user_name="", password="", phone="", email=""):
         hash = hashlib.md5(password)
         hashword = hash.hexdigest()
         # This gets the one row and returns only the first column
         try:
-            rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (username, hashword))[0]
+            rows = self.queryOne("SELECT uid FROM users WHERE username = ? and password = ?", (user_name, hashword))[0]
         except TypeError:
             return False
         return rows
+
+    def username_exists(self, username):
+        """
+        Check if this username exists already.
+        :param username:
+        :return:
+        """
+        try:
+            ifexist = self.queryOne("SELECT username FROM users WHERE username = ?", (username,))[0]
+        except TypeError:
+            return False
+        if ifexist:
+            return True
+        return False
 
     # Read All Users
     def getUsers(self):
@@ -93,6 +114,7 @@ class Users(Database):
 
     # Read User Information By User ID.
     def getUserByUID(self, uid):
+        uid = str(uid)
         row = self.queryOne("SELECT uid, username, first_name, last_name, email FROM users WHERE uid=?", (uid))
         objects_list = []
         d = collections.OrderedDict()

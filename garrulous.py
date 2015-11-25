@@ -53,8 +53,6 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
-logger.debug("testing logger")
-
 class SiteIndex(object):
     exposed = True
 
@@ -88,6 +86,13 @@ class ApiEndpoint(object):
             # If the token is not valid.
             logger.debug('User unauthorized.')
             return False
+        except itsdangerous.SignatureExpired:
+            logger.debug('Unauthorized: Token Expired')
+            return False
+
+    def get_token(self, content):
+        s = URLSafeSerializer(Config.cfg['auth']['key'])
+        return s.dumps(content)
 
     def authenticate(self, token):
         """
@@ -96,16 +101,19 @@ class ApiEndpoint(object):
         :return:
         """
         uid = self.check_token(token)
+        if not uid:
+            return False
+
         user = Users()
         if user.getUserByUID(str(uid)):
+            logger.debug('Authorized: user found with uid %s' % uid)
             return uid
         else:
-            logger.debug('Token data invalid. User unauthorized.')
+            logger.debug('Unauthorized: Token contains invalid data.')
             raise cherrypy.HTTPError("403", "Unauthorized")
 
     def standardize_json(self, json):
         if type(json) is list:
-            pprint.pprint(json)
             return json[0]
         elif type(json) is dict:
             return json
@@ -127,7 +135,7 @@ class UserApi(ApiEndpoint):
 
     # this can return username for searching other people.
     @cherrypy.tools.json_out()
-    def GET(self,token, uid=None):
+    def GET(self, token, uid=None):
         """
         This method needs to be limited based on something like UID, Name, etc.
 
@@ -137,15 +145,15 @@ class UserApi(ApiEndpoint):
             http://garrulous.xyz/v1/user/WzEsInJpY2t5cmVtIl0.obTFbBDPmTY8Ve2e362d-UvArrc/2
         :return:
         """
-        uid = self.authenticate(token)
-        try:
-            users = Users()
-            if uid:
-                return users.getUserByUID(uid)
-            else:
-                return users.getUsers()
-        except:
-            return {'error': True, 'msg': "Error during request"}
+        self.authenticate(token)
+        #try:
+        users = Users()
+        if uid:
+            return users.getUserByUID(uid)
+        else:
+            return users.getUsers()
+        #except:
+            #return {'error': True, 'msg': "Error during request"}
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -162,10 +170,12 @@ class UserApi(ApiEndpoint):
 
         users = Users()
         json = self.standardize_json(cherrypy.request.json)
-        #pprint.pprint(json)
-        if users.createUser(user_name=json['user_name'], password=json['password'],
-                            first_name=json['first_name'], last_name=json['last_name']):
-            return {'error': False, 'msg': "message sent"}
+        username_state= users.createUser(user_name=json['user_name'], password=json['password'],
+                            first_name=json['first_name'], last_name=json['last_name'])
+        if type(username_state) is str:
+            return {'error': False, 'msg': username_state}
+        elif username_state:
+            return {'error': False, 'msg': "User created"}
         else:
             return {'error': True, 'msg': "Error during request"}
 
@@ -211,8 +221,6 @@ class FriendApi(ApiEndpoint):
     def DELETE(self):
         return {'error': True, 'msg': "Error during request"}
 
-# Create Message
-# Get Message
 @cherrypy.popargs('token', 'to_uid', 'start_count', 'end_count')
 class MessageApi(ApiEndpoint):
     exposed = True
@@ -281,10 +289,10 @@ class AuthApi(ApiEndpoint):
         if username and password:
             uid = users.authenticateUser(username=username, password=password)
             if uid:
-                s = URLSafeSerializer(Config.cfg['auth']['key'])
-                return {'error': False, 'msg': "No Error", 'token': s.dumps([uid, username])}
+                token = self.get_token([uid, username])
+                return {'error': False, 'msg': "No Error", 'token': token}
             else:
-                raise cherrypy.HTTPError("403", "Not authenticated")
+                raise cherrypy.HTTPError("403", "Invalid login credentials.")
         return {'error': True, 'msg': "Error during request"}
 
 
