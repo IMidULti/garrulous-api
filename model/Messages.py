@@ -97,12 +97,10 @@ class Messages(Database):
         :return:
         """
 
-        pprint.pprint(self.query('select * from messages;'))
         rows = self.query('SELECT DISTINCT uid_message_from, uid_message_to FROM messages WHERE '
                           'uid_message_to=? or uid_message_from=? '
                           'GROUP BY uid_message_to, uid_message_from;',
                           (uid, uid))
-        pprint.pprint(rows)
         for row in rows:
             pass
         objects_list = []
