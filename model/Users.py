@@ -116,25 +116,21 @@ class Users(Database):
     def getUserByUID(self, uid):
         uid = str(uid)
         row = self.queryOne("SELECT uid, username, first_name, last_name, email FROM users WHERE uid=?", (uid))
-        objects_list = []
-        d = collections.OrderedDict()
+        d = {}
         d['uid'] = row[0]
         d['username'] = row[1]
         d['first_name'] = row[2]
         d['last_name'] = row[3]
         d['email'] = row[4]
-        objects_list.append(d)
-        return objects_list
+        return d
 
     # Read User Information By Username.
     def getUserByUsername(self, username):
         row = self.queryOne("SELECT uid, username, first_name, last_name, email FROM users WHERE username=%s" % username)
-        objects_list = []
-        d = collections.OrderedDict()
+        d = {}
         d['uid'] = row[0]
         d['username'] = row[1]
         d['first_name'] = row[2]
         d['last_name'] = row[3]
         d['email'] = row[4]
-        objects_list.append(d)
-        return objects_list
+        return d
