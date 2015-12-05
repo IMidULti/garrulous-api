@@ -22,6 +22,7 @@ import collections
 import sqlite3
 import logging
 import pprint
+from Users import Users
 
 from Database import Database
 
@@ -79,10 +80,13 @@ class Messages(Database):
                                    '(uid_message_from=? AND uid_message_to=?)',
                                    (to_id, from_id, to_id, from_id))
         objects_list = []
+        user = Users()
         for row in rows:
             d = collections.OrderedDict()
             d['uid_message_from'] = row[0]
+            d['user_name_message_from'] = user.getUserByUID(row[0])['username']
             d['uid_message_to'] = row[1]
+            d['user_name_message_to'] = user.getUserByUID(row[1])['username']
             d['message'] = row[2]
             d['is_read'] = row[3]
             d['date_time'] = row[4]
@@ -104,9 +108,12 @@ class Messages(Database):
         for row in rows:
             pass
         objects_list = []
+        user = Users()
         for row in rows:
             d = collections.OrderedDict()
             d['uid_message_from'] = row[0]
+            d['user_name_message_from'] = user.getUserByUID(row[0])['username']
             d['uid_message_to'] = row[1]
+            d['user_name_message_from'] = user.getUserByUID(row[1])['username']
             objects_list.append(d)
         return objects_list
