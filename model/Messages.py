@@ -114,6 +114,6 @@ class Messages(Database):
             d['uid_message_from'] = row[0]
             d['user_name_message_from'] = user.getUserByUID(row[0])['username']
             d['uid_message_to'] = row[1]
-            d['user_name_message_from'] = user.getUserByUID(row[1])['username']
+            d['user_name_message_to'] = user.getUserByUID(row[1])['username']
             objects_list.append(d)
         return objects_list
