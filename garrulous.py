@@ -287,7 +287,7 @@ class AuthApi(ApiEndpoint):
         """
         users = Users()
         if username and password:
-            uid = users.authenticateUser(username=username, password=password)
+            uid = users.authenticateUser(user_name=username, password=password)
             if uid:
                 token = self.get_token([uid, username])
                 return {'error': False, 'msg': "No Error", 'token': token}
