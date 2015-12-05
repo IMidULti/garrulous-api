@@ -20,12 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import cherrypy
-import json
 import logging
-import yaml
 from itsdangerous import URLSafeSerializer
 import itsdangerous
-import pprint
 import time
 
 from model.Users import Users
@@ -173,7 +170,7 @@ class UserApi(ApiEndpoint):
         username_state= users.createUser(user_name=json['user_name'], password=json['password'],
                             first_name=json['first_name'], last_name=json['last_name'])
         if type(username_state) is str:
-            return {'error': False, 'msg': username_state}
+            return {'error': True, 'msg': username_state}
         elif username_state:
             return {'error': False, 'msg': "User created"}
         else:
