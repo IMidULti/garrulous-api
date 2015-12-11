@@ -126,13 +126,13 @@ class SiteApi(object):
 
 #Create User
 #Updates user
-@cherrypy.popargs('token', 'uid')
+@cherrypy.popargs('token', 'user')
 class UserApi(ApiEndpoint):
     exposed = True
 
     # this can return username for searching other people.
     @cherrypy.tools.json_out()
-    def GET(self, token, uid=None):
+    def GET(self, token, user=None):
         """
         This method needs to be limited based on something like UID, Name, etc.
 
@@ -145,8 +145,10 @@ class UserApi(ApiEndpoint):
         self.authenticate(token)
         #try:
         users = Users()
-        if uid:
-            return users.getUserByUID(uid)
+        if user and user.isdigit():
+            return users.getUserByUID(user)
+        elif type(user) is str:
+            return users.getUsersLike(user)
         else:
             return users.getUsers()
         #except:

@@ -22,7 +22,7 @@ import collections
 import hashlib
 import time
 import logging
-import math
+import pprint
 
 from Database import Database
 
@@ -109,6 +109,19 @@ class Users(Database):
             d['first_name'] = row[2]
             d['last_name'] = row[3]
             d['email'] = row[4]
+            objects_list.append(d)
+        return objects_list
+
+    def getUsersLike(self, search):
+        search = "%" + search + "%"
+        rows = self.query("SELECT uid, username, first_name, last_name FROM users WHERE username LIKE ? OR first_name LIKE ? OR last_name LIKE ? LIMIT 20", (search, search, search,))
+        objects_list = []
+        for row in rows:
+            d = collections.OrderedDict()
+            d['uid'] = row[0]
+            d['username'] = row[1]
+            d['first_name'] = row[2]
+            d['last_name'] = row[3]
             objects_list.append(d)
         return objects_list
 
