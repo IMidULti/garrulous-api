@@ -147,7 +147,7 @@ class UserApi(ApiEndpoint):
         users = Users()
         if user and user.isdigit():
             return users.getUserByUID(user)
-        elif type(user) is str:
+        elif type(user) is unicode or type(user) is str:
             return users.getUsersLike(user)
         else:
             return users.getUsers()
