@@ -101,19 +101,22 @@ class Messages(Database):
         :return:
         """
 
-        rows = self.query('SELECT DISTINCT uid_message_from, uid_message_to FROM messages WHERE '
+        rows = self.query('SELECT DISTINCT uid_message_from, uid_message_to, date_time FROM messages WHERE '
                           'uid_message_to=? or uid_message_from=? '
-                          'GROUP BY uid_message_to, uid_message_from;',
+                          'GROUP BY uid_message_to, uid_message_from '
+                          'ORDER BY date_time DESC;',
                           (uid, uid))
         for row in rows:
             pass
-        objects_list = []
+        objects_list = collections.OrderedDict()
         user = Users()
         for row in rows:
-            d = collections.OrderedDict()
-            d['uid_message_from'] = row[0]
-            d['user_name_message_from'] = user.getUserByUID(row[0])['username']
-            d['uid_message_to'] = row[1]
-            d['user_name_message_to'] = user.getUserByUID(row[1])['username']
-            objects_list.append(d)
+            if row[0] == uid:
+                other_account = row[1]
+            else:
+                other_account = row[0]
+            if other_account in objects_list and objects_list[other_account]['date_time'] > row[2]:
+                continue
+            objects_list[other_account] = {'user_name': user.getUserByUID(other_account)['username'],
+                                           'date_time': row[2]}
         return objects_list
