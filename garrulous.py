@@ -289,7 +289,8 @@ class AuthApi(ApiEndpoint):
             uid = users.authenticateUser(user_name=username, password=password)
             if uid:
                 token = self.get_token([uid, username])
-                return {'error': False, 'msg': "No Error", 'token': token}
+                return {'error': False, 'msg': "No Error", 'token': token,
+                        'user_name': username, 'uid': uid}
             else:
                 raise cherrypy.HTTPError("403", "Invalid login credentials.")
         return {'error': True, 'msg': "Error during request"}
