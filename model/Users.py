@@ -64,11 +64,31 @@ class Users(Database):
     def updateUserByUid(self, uid, user_name=None, password=None, first_name=None, last_name=None, email=None,
                         phone=None):
         # This needs to build the query out of the amount of parameters that exist. That way a all the existing
-        # data doesn't get overwritten.
-        if self.write('UPDATE users SET user_name=?, password=?, first_name=?, last_name=? '
-                      'WHERE uid=?', (user_name, password, first_name, last_name)):
-            return True
-        return False
+        # data doesn't get overwritten.\
+        success = True
+        if email:
+            if not self.write('UPDATE users SET email=? '
+                          'WHERE uid=?', (email, uid)):
+                 success = False
+        if last_name:
+            if self.write('UPDATE users SET last_name=? '
+                          'WHERE uid=?', (last_name, uid)):
+                success = False
+        if first_name:
+            if self.write('UPDATE users SET first_name=? '
+                          'WHERE uid=?', (first_name, uid)):
+                success = False
+        if password:
+            hash = hashlib.md5(password)
+            hashword = hash.hexdigest()
+            if self.write('UPDATE users SET password=? '
+                          'WHERE uid=?', (hashword, uid)):
+                success = False
+        if user_name:
+            if self.write('UPDATE users SET user_name=? '
+                          'WHERE uid=?', (user_name, uid)):
+                success = False
+        return success
 
 
     def authenticateUser(self, user_name="", password="", phone="", email=""):

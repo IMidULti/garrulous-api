@@ -193,10 +193,10 @@ class UserApi(ApiEndpoint):
         json = self.standardize_json(cherrypy.request.json)
         users = Users()
         if uid:
-            if users.updateUserByUid(uid, user_name=json['username'], password=json['password'],
-                                     first_name=json['first_name'], last_name=json['last_name'], ):
+            if users.updateUserByUid(uid, user_name=json.get('username', None), password=json.get('password', None),
+                                     first_name=json.get('first_name', None), last_name=json.get('last_name', None), ):
                 return {'error': True, 'msg': "Updated user information for %s" % json['username']}
-        return {'error': True, 'msg': "Error during request"}
+        return {'error': False, 'msg': "Error during request"}
 
     @cherrypy.tools.json_out()
     def DELETE(self):
