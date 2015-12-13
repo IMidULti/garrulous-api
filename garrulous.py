@@ -248,6 +248,8 @@ class MessageApi(ApiEndpoint):
 
         if data:
             return data
+        if type(data) is list:
+            return {}
         else:
             return {'error': True, 'msg': "Error during request"}
 
